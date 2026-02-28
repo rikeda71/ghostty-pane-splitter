@@ -6,7 +6,7 @@ pub struct KeyCombo {
     pub key: Key,
 }
 
-pub fn parse_ghostty_key(name: &str) -> Result<Key, String> {
+fn parse_ghostty_key(name: &str) -> Result<Key, String> {
     match name {
         // 修飾キー
         "super" => Ok(Key::Meta),
