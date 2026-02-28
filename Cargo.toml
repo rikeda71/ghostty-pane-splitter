@@ -1,0 +1,13 @@
+[package]
+name = "ghostty-pane-splitter"
+version = "0.1.0"
+edition = "2021"
+description = "CLI tool to split panes on Ghostty Terminal"
+license = "MIT"
+
+[dependencies]
+enigo = "0.6.1"
+
+[profile.release]
+strip = true
+lto = true
