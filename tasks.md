@@ -12,4 +12,7 @@
 
 ### リファクタリング
 
-- [ ] T-17: main.rs からモジュールへの分離（layout.rs, config.rs に分離し、main.rs は CLI エントリーポイントのみにする）
+- [ ] T-17: layout.rs に Layout, parse_layout を分離
+- [ ] T-18: keybind.rs に KeyCombo, parse_ghostty_key, parse_key_combo, MODIFIER_NAMES を分離
+- [ ] T-19: config.rs に Keybindings, find_config_path, parse_keybindings, REQUIRED_ACTIONS を分離
+- [ ] T-20: split.rs に press_key_combo, execute_splits, DELAY_MS を分離
