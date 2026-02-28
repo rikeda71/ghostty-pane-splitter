@@ -128,7 +128,7 @@ dependencies = [
 
 [[package]]
 name = "ghostty-pane-splitter"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "enigo",
 ]
