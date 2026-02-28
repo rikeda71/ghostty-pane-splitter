@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::fs;
 use std::path::PathBuf;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -64,33 +63,51 @@ fn parse_layout(arg: &str) -> Result<Layout, String> {
     Ok(Layout { cols, rows })
 }
 
-fn find_config_path() -> Option<PathBuf> {
-    if cfg!(target_os = "macos") {
-        if let Some(home) = std::env::var_os("HOME") {
-            let path = PathBuf::from(home)
-                .join("Library/Application Support/com.mitchellh.ghostty/config");
-            if path.exists() {
-                return Some(path);
-            }
+#[derive(Debug, PartialEq)]
+struct Keybindings {
+    split_right: String,
+    split_down: String,
+    goto_next: String,
+    goto_previous: String,
+    equalize: String,
+}
+
+fn find_config_path() -> Result<PathBuf, String> {
+    let home =
+        std::env::var("HOME").map_err(|_| "HOME environment variable is not set".to_string())?;
+
+    let mut candidates = Vec::new();
+
+    #[cfg(target_os = "macos")]
+    {
+        candidates.push(
+            PathBuf::from(&home).join("Library/Application Support/com.mitchellh.ghostty/config"),
+        );
+    }
+
+    let xdg_config =
+        std::env::var("XDG_CONFIG_HOME").unwrap_or_else(|_| format!("{}/.config", home));
+    candidates.push(PathBuf::from(&xdg_config).join("ghostty/config"));
+
+    for path in &candidates {
+        if path.exists() {
+            return Ok(path.clone());
         }
     }
 
-    let xdg_config = std::env::var("XDG_CONFIG_HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| {
-            let home = std::env::var("HOME").unwrap_or_default();
-            PathBuf::from(home).join(".config")
-        });
-    let path = xdg_config.join("ghostty/config");
-    if path.exists() {
-        return Some(path);
-    }
-
-    None
+    Err(format!(
+        "Ghostty config file not found. Searched:\n{}",
+        candidates
+            .iter()
+            .map(|p| format!("  - {}", p.display()))
+            .collect::<Vec<_>>()
+            .join("\n")
+    ))
 }
 
-fn parse_keybinds(content: &str) -> HashMap<String, String> {
-    let mut keybinds = HashMap::new();
+fn parse_keybindings(content: &str) -> Result<Keybindings, String> {
+    let mut bindings: HashMap<&str, &str> = HashMap::new();
+
     for line in content.lines() {
         let line = line.trim();
         if line.is_empty() || line.starts_with('#') {
@@ -104,59 +121,49 @@ fn parse_keybinds(content: &str) -> HashMap<String, String> {
             continue;
         };
         let rest = rest.trim();
-        if let Some((trigger, action)) = rest.split_once('=') {
-            keybinds.insert(action.trim().to_string(), trigger.trim().to_string());
+
+        // trigger=action の分割
+        let Some((trigger, action)) = rest.split_once('=') else {
+            continue;
+        };
+        let trigger = trigger.trim();
+        let action = action.trim();
+
+        if REQUIRED_ACTIONS.contains(&action) {
+            bindings.insert(action, trigger);
         }
     }
-    keybinds
-}
 
-fn validate_keybinds(keybinds: &HashMap<String, String>) -> Result<(), Vec<&'static str>> {
     let missing: Vec<&str> = REQUIRED_ACTIONS
         .iter()
-        .filter(|action| !keybinds.contains_key(**action))
+        .filter(|a| !bindings.contains_key(*a))
         .copied()
         .collect();
-    if missing.is_empty() {
-        Ok(())
-    } else {
-        Err(missing)
-    }
-}
 
-fn load_keybinds() -> Result<HashMap<String, String>, String> {
-    let config_path = find_config_path().ok_or_else(|| {
-        "Ghostty config file not found. Expected locations:\n  \
-         macOS: ~/Library/Application Support/com.mitchellh.ghostty/config\n  \
-         Linux: ~/.config/ghostty/config"
-            .to_string()
-    })?;
-
-    let content = fs::read_to_string(&config_path).map_err(|e| {
-        format!(
-            "Failed to read config file '{}': {}",
-            config_path.display(),
-            e
-        )
-    })?;
-
-    let keybinds = parse_keybinds(&content);
-
-    if let Err(missing) = validate_keybinds(&keybinds) {
-        let mut msg = format!("Missing keybinds in {}:\n", config_path.display());
-        for action in &missing {
-            msg.push_str(&format!("  - {}\n", action));
-        }
-        msg.push_str("\nAdd the following to your Ghostty config:\n");
-        msg.push_str("  keybind = super+d=new_split:right\n");
-        msg.push_str("  keybind = super+shift+d=new_split:down\n");
-        msg.push_str("  keybind = super+ctrl+right_bracket=goto_split:next\n");
-        msg.push_str("  keybind = super+ctrl+left_bracket=goto_split:previous\n");
-        msg.push_str("  keybind = super+ctrl+shift+equal=equalize_splits");
-        return Err(msg);
+    if !missing.is_empty() {
+        return Err(format!(
+            "Missing keybindings for the following actions:\n{}\n\n\
+             Add them to your Ghostty config. Example:\n\
+             \x20 keybind = super+d=new_split:right\n\
+             \x20 keybind = super+shift+d=new_split:down\n\
+             \x20 keybind = super+ctrl+right_bracket=goto_split:next\n\
+             \x20 keybind = super+ctrl+left_bracket=goto_split:previous\n\
+             \x20 keybind = super+ctrl+shift+equal=equalize_splits",
+            missing
+                .iter()
+                .map(|a| format!("  - {}", a))
+                .collect::<Vec<_>>()
+                .join("\n")
+        ));
     }
 
-    Ok(keybinds)
+    Ok(Keybindings {
+        split_right: bindings["new_split:right"].to_string(),
+        split_down: bindings["new_split:down"].to_string(),
+        goto_next: bindings["goto_split:next"].to_string(),
+        goto_previous: bindings["goto_split:previous"].to_string(),
+        equalize: bindings["equalize_splits"].to_string(),
+    })
 }
 
 fn main() {
@@ -172,8 +179,22 @@ fn main() {
         "--version" | "-V" => println!("ghostty-pane-splitter {}", VERSION),
         arg => match parse_layout(arg) {
             Ok(layout) => {
-                let _keybinds = match load_keybinds() {
-                    Ok(kb) => kb,
+                let config_path = match find_config_path() {
+                    Ok(p) => p,
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                        std::process::exit(1);
+                    }
+                };
+                let content = match std::fs::read_to_string(&config_path) {
+                    Ok(c) => c,
+                    Err(e) => {
+                        eprintln!("Error: Failed to read {}: {}", config_path.display(), e);
+                        std::process::exit(1);
+                    }
+                };
+                let keybindings = match parse_keybindings(&content) {
+                    Ok(k) => k,
                     Err(e) => {
                         eprintln!("Error: {}", e);
                         std::process::exit(1);
@@ -185,6 +206,7 @@ fn main() {
                     layout.rows,
                     layout.cols * layout.rows
                 );
+                println!("Keybindings: {:?}", keybindings);
                 println!("(Not yet implemented)");
             }
             Err(e) => {
@@ -254,108 +276,88 @@ mod tests {
         }
     }
 
-    #[test]
-    fn parse_keybinds_valid() {
-        let content = "\
+    const FULL_CONFIG: &str = "\
 keybind = super+d=new_split:right
 keybind = super+shift+d=new_split:down
 keybind = super+ctrl+right_bracket=goto_split:next
 keybind = super+ctrl+left_bracket=goto_split:previous
 keybind = super+ctrl+shift+equal=equalize_splits
 ";
-        let keybinds = parse_keybinds(content);
-        assert_eq!(keybinds.get("new_split:right").unwrap(), "super+d");
-        assert_eq!(keybinds.get("new_split:down").unwrap(), "super+shift+d");
-        assert_eq!(
-            keybinds.get("goto_split:next").unwrap(),
-            "super+ctrl+right_bracket"
-        );
-        assert_eq!(
-            keybinds.get("goto_split:previous").unwrap(),
-            "super+ctrl+left_bracket"
-        );
-        assert_eq!(
-            keybinds.get("equalize_splits").unwrap(),
-            "super+ctrl+shift+equal"
-        );
+
+    #[test]
+    fn parse_keybindings_all_present() {
+        let kb = parse_keybindings(FULL_CONFIG).unwrap();
+        assert_eq!(kb.split_right, "super+d");
+        assert_eq!(kb.split_down, "super+shift+d");
+        assert_eq!(kb.goto_next, "super+ctrl+right_bracket");
+        assert_eq!(kb.goto_previous, "super+ctrl+left_bracket");
+        assert_eq!(kb.equalize, "super+ctrl+shift+equal");
     }
 
     #[test]
-    fn parse_keybinds_with_comments_and_other_settings() {
-        let content = "\
+    fn parse_keybindings_with_comments_and_other_lines() {
+        let config = "\
 # This is a comment
 font-size = 14
 keybind = super+d=new_split:right
 
-# Another comment
-window-decoration = false
+keybind = super+shift+d=new_split:down
+# another comment
+keybind = super+ctrl+right_bracket=goto_split:next
+keybind = super+ctrl+left_bracket=goto_split:previous
+keybind = super+ctrl+shift+equal=equalize_splits
+keybind = super+t=new_tab
+";
+        let kb = parse_keybindings(config).unwrap();
+        assert_eq!(kb.split_right, "super+d");
+        assert_eq!(kb.split_down, "super+shift+d");
+    }
+
+    #[test]
+    fn parse_keybindings_with_extra_whitespace() {
+        let config = "\
+  keybind = super+d = new_split:right
+keybind =   super+shift+d = new_split:down
+keybind = super+ctrl+right_bracket = goto_split:next
+keybind = super+ctrl+left_bracket = goto_split:previous
+keybind = super+ctrl+shift+equal = equalize_splits
+";
+        let kb = parse_keybindings(config).unwrap();
+        assert_eq!(kb.split_right, "super+d");
+        assert_eq!(kb.split_down, "super+shift+d");
+    }
+
+    #[test]
+    fn parse_keybindings_missing_some() {
+        let config = "\
+keybind = super+d=new_split:right
 keybind = super+shift+d=new_split:down
 ";
-        let keybinds = parse_keybinds(content);
-        assert_eq!(keybinds.len(), 2);
-        assert_eq!(keybinds.get("new_split:right").unwrap(), "super+d");
-        assert_eq!(keybinds.get("new_split:down").unwrap(), "super+shift+d");
+        let err = parse_keybindings(config).unwrap_err();
+        assert!(err.contains("goto_split:next"), "error: {}", err);
+        assert!(err.contains("goto_split:previous"), "error: {}", err);
+        assert!(err.contains("equalize_splits"), "error: {}", err);
     }
 
     #[test]
-    fn parse_keybinds_duplicate_action_last_wins() {
-        let content = "\
+    fn parse_keybindings_empty_config() {
+        let err = parse_keybindings("").unwrap_err();
+        for action in REQUIRED_ACTIONS {
+            assert!(err.contains(action), "error should contain {}", action);
+        }
+    }
+
+    #[test]
+    fn parse_keybindings_last_binding_wins() {
+        let config = "\
 keybind = super+d=new_split:right
 keybind = ctrl+d=new_split:right
+keybind = super+shift+d=new_split:down
+keybind = super+ctrl+right_bracket=goto_split:next
+keybind = super+ctrl+left_bracket=goto_split:previous
+keybind = super+ctrl+shift+equal=equalize_splits
 ";
-        let keybinds = parse_keybinds(content);
-        assert_eq!(keybinds.get("new_split:right").unwrap(), "ctrl+d");
-    }
-
-    #[test]
-    fn parse_keybinds_empty_content() {
-        let keybinds = parse_keybinds("");
-        assert!(keybinds.is_empty());
-    }
-
-    #[test]
-    fn parse_keybinds_no_spaces() {
-        let content = "keybind=super+d=new_split:right\n";
-        let keybinds = parse_keybinds(content);
-        assert_eq!(keybinds.get("new_split:right").unwrap(), "super+d");
-    }
-
-    #[test]
-    fn validate_keybinds_all_present() {
-        let mut keybinds = HashMap::new();
-        keybinds.insert("new_split:right".to_string(), "super+d".to_string());
-        keybinds.insert("new_split:down".to_string(), "super+shift+d".to_string());
-        keybinds.insert("goto_split:next".to_string(), "super+ctrl+]".to_string());
-        keybinds.insert(
-            "goto_split:previous".to_string(),
-            "super+ctrl+[".to_string(),
-        );
-        keybinds.insert(
-            "equalize_splits".to_string(),
-            "super+ctrl+shift+=".to_string(),
-        );
-        assert!(validate_keybinds(&keybinds).is_ok());
-    }
-
-    #[test]
-    fn validate_keybinds_missing_all() {
-        let keybinds = HashMap::new();
-        let result = validate_keybinds(&keybinds);
-        assert!(result.is_err());
-        assert_eq!(result.unwrap_err().len(), 5);
-    }
-
-    #[test]
-    fn validate_keybinds_partial() {
-        let mut keybinds = HashMap::new();
-        keybinds.insert("new_split:right".to_string(), "super+d".to_string());
-        keybinds.insert("new_split:down".to_string(), "super+shift+d".to_string());
-        let result = validate_keybinds(&keybinds);
-        assert!(result.is_err());
-        let missing = result.unwrap_err();
-        assert_eq!(missing.len(), 3);
-        assert!(missing.contains(&"goto_split:next"));
-        assert!(missing.contains(&"goto_split:previous"));
-        assert!(missing.contains(&"equalize_splits"));
+        let kb = parse_keybindings(config).unwrap();
+        assert_eq!(kb.split_right, "ctrl+d");
     }
 }
