@@ -37,6 +37,14 @@ cargo run -- 4           # 2x2 グリッドで pane 分割
   - Next セクションを次に着手すべきタスクに更新する
   - 対応中に新たに出てきたタスクがあれば追記する
 
+## テスト規約
+
+- 可能な限り parameterized test（テストケースを配列/タプルで定義しループで実行）を使う
+- タスク完了時に以下の品質チェックをすべて実行し、通過を確認すること:
+  - `cargo fmt --check`
+  - `cargo test`
+  - `cargo clippy -- -D warnings`
+
 ## ドキュメント規約
 
 - `docs/` ディレクトリに連番付きで配置: `NNN-title.md`
