@@ -1,8 +1,11 @@
-use enigo::Key;
+use enigo::{Direction, Enigo, Key, Keyboard, Settings};
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::thread;
+use std::time::Duration;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+const DELAY_MS: u64 = 200;
 
 const REQUIRED_ACTIONS: &[&str] = &[
     "new_split:right",
@@ -261,6 +264,59 @@ fn parse_keybindings(content: &str) -> Result<Keybindings, String> {
     })
 }
 
+fn press_key_combo(enigo: &mut Enigo, combo: &KeyCombo) -> Result<(), enigo::InputError> {
+    for modifier in &combo.modifiers {
+        enigo.key(*modifier, Direction::Press)?;
+    }
+    enigo.key(combo.key, Direction::Click)?;
+    for modifier in combo.modifiers.iter().rev() {
+        enigo.key(*modifier, Direction::Release)?;
+    }
+    Ok(())
+}
+
+fn execute_splits(keybindings: &Keybindings, layout: &Layout) -> Result<(), String> {
+    let mut enigo = Enigo::new(&Settings::default())
+        .map_err(|e| format!("Failed to initialize enigo: {}", e))?;
+    let delay = Duration::from_millis(DELAY_MS);
+
+    // Phase 1: 列を作成（水平分割）
+    for _ in 0..(layout.cols - 1) {
+        press_key_combo(&mut enigo, &keybindings.split_right)
+            .map_err(|e| format!("Failed to send split_right: {}", e))?;
+        thread::sleep(delay);
+    }
+
+    // 最初の列に戻る
+    for _ in 0..(layout.cols - 1) {
+        press_key_combo(&mut enigo, &keybindings.goto_previous)
+            .map_err(|e| format!("Failed to send goto_previous: {}", e))?;
+        thread::sleep(delay);
+    }
+
+    // Phase 2: 各列に行を作成（垂直分割）
+    if layout.rows > 1 {
+        for col in 0..layout.cols {
+            for _ in 0..(layout.rows - 1) {
+                press_key_combo(&mut enigo, &keybindings.split_down)
+                    .map_err(|e| format!("Failed to send split_down: {}", e))?;
+                thread::sleep(delay);
+            }
+            if col < layout.cols - 1 {
+                press_key_combo(&mut enigo, &keybindings.goto_next)
+                    .map_err(|e| format!("Failed to send goto_next: {}", e))?;
+                thread::sleep(delay);
+            }
+        }
+    }
+
+    // Phase 3: pane サイズの均等化
+    press_key_combo(&mut enigo, &keybindings.equalize)
+        .map_err(|e| format!("Failed to send equalize: {}", e))?;
+
+    Ok(())
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
 
@@ -296,13 +352,16 @@ fn main() {
                     }
                 };
                 println!(
-                    "Grid: {}x{} ({} panes)",
+                    "Splitting into {}x{} grid ({} panes)...",
                     layout.cols,
                     layout.rows,
                     layout.cols * layout.rows
                 );
-                println!("Keybindings: {:?}", keybindings);
-                println!("(Not yet implemented)");
+                if let Err(e) = execute_splits(&keybindings, &layout) {
+                    eprintln!("Error: {}", e);
+                    std::process::exit(1);
+                }
+                println!("Done!");
             }
             Err(e) => {
                 eprintln!("Error: {}", e);

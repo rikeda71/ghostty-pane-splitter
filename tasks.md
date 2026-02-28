@@ -2,17 +2,13 @@
 
 ## Next
 
-次に着手するタスク: T-13, T-14, T-15
+次に着手するタスク: T-17
 
 ## Backlog
 
-### pane 分割の実行
-
-- [ ] T-13: enigo によるキーボード入力シミュレーション実装
-- [ ] T-14: 分割フロー: split_right → pane 移動 → split_down → equalize
-- [ ] T-15: 操作間のスリープ挿入
-- [ ] T-16: Ghostty 上での手動テスト
-
 ### リファクタリング
 
-- [ ] T-17: main.rs からモジュールへの分離（layout.rs, config.rs に分離し、main.rs は CLI エントリーポイントのみにする）
+- [ ] T-17: layout.rs に Layout, parse_layout を分離
+- [ ] T-18: keybind.rs に KeyCombo, parse_ghostty_key, parse_key_combo, MODIFIER_NAMES を分離
+- [ ] T-19: config.rs に Keybindings, find_config_path, parse_keybindings, REQUIRED_ACTIONS を分離
+- [ ] T-20: split.rs に press_key_combo, execute_splits, DELAY_MS を分離
