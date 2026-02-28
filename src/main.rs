@@ -107,87 +107,36 @@ EXAMPLES:
 mod tests {
     use super::*;
 
-    // T-1: 数値指定のパース
     #[test]
-    fn parse_layout_number_2() {
-        assert_eq!(parse_layout("2"), Ok(Layout { cols: 2, rows: 1 }));
+    fn parse_layout_valid_cases() {
+        let cases = [
+            // 数値指定
+            ("2", 2, 1),
+            ("3", 3, 1),
+            ("4", 2, 2),
+            ("5", 5, 1), // 素数は横一列
+            ("6", 3, 2),
+            ("9", 3, 3),
+            // グリッド指定
+            ("2x3", 2, 3),
+            ("3x2", 3, 2),
+            ("1x4", 1, 4),
+        ];
+        for (input, cols, rows) in cases {
+            assert_eq!(
+                parse_layout(input),
+                Ok(Layout { cols, rows }),
+                "input: {}",
+                input
+            );
+        }
     }
 
     #[test]
-    fn parse_layout_number_3() {
-        assert_eq!(parse_layout("3"), Ok(Layout { cols: 3, rows: 1 }));
-    }
-
-    #[test]
-    fn parse_layout_number_4() {
-        assert_eq!(parse_layout("4"), Ok(Layout { cols: 2, rows: 2 }));
-    }
-
-    #[test]
-    fn parse_layout_number_5() {
-        // 素数は横一列
-        assert_eq!(parse_layout("5"), Ok(Layout { cols: 5, rows: 1 }));
-    }
-
-    #[test]
-    fn parse_layout_number_6() {
-        assert_eq!(parse_layout("6"), Ok(Layout { cols: 3, rows: 2 }));
-    }
-
-    #[test]
-    fn parse_layout_number_9() {
-        assert_eq!(parse_layout("9"), Ok(Layout { cols: 3, rows: 3 }));
-    }
-
-    // T-1: グリッド指定のパース
-    #[test]
-    fn parse_layout_grid_2x3() {
-        assert_eq!(parse_layout("2x3"), Ok(Layout { cols: 2, rows: 3 }));
-    }
-
-    #[test]
-    fn parse_layout_grid_3x2() {
-        assert_eq!(parse_layout("3x2"), Ok(Layout { cols: 3, rows: 2 }));
-    }
-
-    #[test]
-    fn parse_layout_grid_1x4() {
-        assert_eq!(parse_layout("1x4"), Ok(Layout { cols: 1, rows: 4 }));
-    }
-
-    // T-2: 不正な引数のエラー
-    #[test]
-    fn parse_layout_invalid_string() {
-        assert!(parse_layout("abc").is_err());
-    }
-
-    #[test]
-    fn parse_layout_zero() {
-        assert!(parse_layout("0").is_err());
-    }
-
-    #[test]
-    fn parse_layout_one() {
-        assert!(parse_layout("1").is_err());
-    }
-
-    #[test]
-    fn parse_layout_grid_zero_col() {
-        assert!(parse_layout("0x3").is_err());
-    }
-
-    #[test]
-    fn parse_layout_grid_zero_row() {
-        assert!(parse_layout("2x0").is_err());
-    }
-
-    #[test]
-    fn parse_layout_grid_1x1() {
-        assert!(parse_layout("1x1").is_err());
-    }
-
-    #[test]
-    fn parse_layout_invalid_grid() {
-        assert!(parse_layout("axb").is_err());
+    fn parse_layout_invalid_cases() {
+        let cases = ["abc", "0", "1", "0x3", "2x0", "1x1", "axb"];
+        for input in cases {
+            assert!(parse_layout(input).is_err(), "input: {}", input);
+        }
     }
 }
