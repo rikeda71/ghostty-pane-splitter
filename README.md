@@ -4,6 +4,8 @@
 [![crates.io](https://img.shields.io/crates/v/ghostty-pane-splitter.svg)](https://crates.io/crates/ghostty-pane-splitter)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+**[日本語版 README はこちら](README.ja.md)**
+
 CLI tool to split panes on Ghostty Terminal.
 
 Automates Ghostty's pane splitting by simulating keyboard inputs via [enigo](https://github.com/enigo-rs/enigo), enabling cross-platform support (macOS / Linux).
