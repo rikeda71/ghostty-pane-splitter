@@ -29,17 +29,21 @@ cargo install --path .
 
 ## Configuration
 
-Create a configuration file at `~/.config/ghostty-pane-splitter/config` with your Ghostty keybindings:
+This tool reads keybindings directly from your Ghostty config file. Add the following keybindings to your Ghostty config:
 
-```toml
-split_right = "super+d"
-split_down = "super+shift+d"
-goto_next = "super+ctrl+right_bracket"
-goto_previous = "super+ctrl+left_bracket"
-equalize = "super+ctrl+shift+equal"
+```
+keybind = super+d=new_split:right
+keybind = super+shift+d=new_split:down
+keybind = super+ctrl+right_bracket=goto_split:next
+keybind = super+ctrl+left_bracket=goto_split:previous
+keybind = super+ctrl+shift+equal=equalize_splits
 ```
 
-Set the values to match your Ghostty keybind configuration. The tool will show an error with setup instructions if this file is not found.
+Ghostty config file locations:
+- **macOS**: `~/Library/Application Support/com.mitchellh.ghostty/config`
+- **Linux**: `~/.config/ghostty/config`
+
+The tool will show an error if the config file is not found or required keybindings are missing.
 
 ## Usage
 

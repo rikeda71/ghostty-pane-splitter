@@ -59,25 +59,46 @@ ghostty-pane-splitter <LAYOUT>
 
 ### キーバインド戦略
 
-Ghostty のキーバインドはユーザーごとに異なるため、ハードコードではなく設定ファイルでユーザーが自分のキーバインドを指定する方式を採用する。
+Ghostty 自身の設定ファイルから直接キーバインドを読み取る方式を採用する。ユーザーが別途設定ファイルを用意する必要がなく、既存の Ghostty 設定がそのまま利用できる。
 
-**設定ファイルパス**: `~/.config/ghostty-pane-splitter/config`
+#### 設定ファイルパス（OS ごと）
 
-```toml
-split_right = "super+d"
-split_down = "super+shift+d"
-goto_next = "super+ctrl+right_bracket"
-goto_previous = "super+ctrl+left_bracket"
-equalize = "super+ctrl+shift+equal"
+以下の順序で探索し、最初に見つかったファイルを使用する:
+
+- **macOS**:
+  1. `$HOME/Library/Application Support/com.mitchellh.ghostty/config`
+  2. `$XDG_CONFIG_HOME/ghostty/config`（`XDG_CONFIG_HOME` 未設定時は `$HOME/.config/ghostty/config`）
+- **Linux**:
+  1. `$XDG_CONFIG_HOME/ghostty/config`（`XDG_CONFIG_HOME` 未設定時は `$HOME/.config/ghostty/config`）
+
+#### パース対象
+
+Ghostty の設定ファイルから `keybind = <trigger>=<action>` 形式の行を読み取り、以下のアクションに対応するトリガー（キーバインド）を抽出する:
+
+| アクション | 用途 |
+|-----------|------|
+| `new_split:right` | 右方向に pane 分割 |
+| `new_split:down` | 下方向に pane 分割 |
+| `goto_split:next` | 次の pane に移動 |
+| `goto_split:previous` | 前の pane に移動 |
+| `equalize_splits` | pane サイズの均等化 |
+
+#### 設定例（Ghostty の config）
+
+```
+keybind = super+d=new_split:right
+keybind = super+shift+d=new_split:down
+keybind = super+ctrl+right_bracket=goto_split:next
+keybind = super+ctrl+left_bracket=goto_split:previous
+keybind = super+ctrl+shift+equal=equalize_splits
 ```
 
-- 設定ファイルがない場合はエラーメッセージと設定例を表示し、ユーザーに設定を促す
-- TOML ライクな `key = "value"` 形式の簡易パーサーを自前実装（依存最小化のため外部 TOML パーサーは使用しない）
-- 修飾キー: `super`, `ctrl`, `shift`, `alt` を `+` で連結
+- 設定ファイルが見つからない場合や、必要なアクションのキーバインドが未設定の場合はエラーメッセージと設定例を表示
+- 修飾キー: `super`, `ctrl`, `shift`, `alt` を `+` で連結（Ghostty の記法をそのまま使用）
 
 ### pane 分割の実行フロー
 
-1. 設定ファイルを読み込み、キーバインドを取得
+1. Ghostty の設定ファイルを読み込み、必要なアクションのキーバインドを取得
 2. CLI 引数を解析し、cols x rows を算出
 3. enigo でキーボード入力をシミュレーション:
    - 1行目: `split_right` を (cols - 1) 回実行
@@ -101,9 +122,9 @@ clap は高機能だが、本ツールのインターフェースは `<LAYOUT>` 
 
 Accessibility API (macOS) は直接ウィンドウを操作でき信頼性が高いが、プラットフォーム固有の実装が必要。enigo はクロスプラットフォームでキーボード入力をシミュレーションでき、Ghostty のキーバインド経由で操作するため十分に動作する。
 
-### キーバインド: ハードコード vs 設定ファイル
+### キーバインド: 独自設定ファイル vs Ghostty 設定ファイル読み込み
 
-Ghostty のデフォルトキーバインドをハードコードする案もあったが、ユーザーがカスタマイズしている場合に対応できない。設定ファイル方式であれば、どのようなキーバインド設定でも対応可能。
+独自の設定ファイル (`~/.config/ghostty-pane-splitter/config`) でキーバインドを管理する案もあったが、ユーザーが Ghostty の設定と二重管理する必要が生じる。Ghostty の設定ファイルを直接読み取る方式であれば、追加の設定不要で既存のキーバインドをそのまま利用できる。
 
 ## Testing Strategy
 
