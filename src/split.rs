@@ -6,8 +6,10 @@ use crate::config::Keybindings;
 use crate::keybind::KeyCombo;
 use crate::layout::Layout;
 
+/// Delay in milliseconds between key operations to allow Ghostty to process each action.
 const DELAY_MS: u64 = 200;
 
+/// Sends a key combination via enigo by pressing modifiers, clicking the key, and releasing.
 fn press_key_combo(enigo: &mut Enigo, combo: &KeyCombo) -> Result<(), enigo::InputError> {
     for modifier in &combo.modifiers {
         enigo.key(*modifier, Direction::Press)?;
@@ -19,6 +21,7 @@ fn press_key_combo(enigo: &mut Enigo, combo: &KeyCombo) -> Result<(), enigo::Inp
     Ok(())
 }
 
+/// Executes pane splits by simulating keyboard input according to the given layout.
 pub fn execute_splits(keybindings: &Keybindings, layout: &Layout) -> Result<(), String> {
     let mut enigo = Enigo::new(&Settings::default())
         .map_err(|e| format!("Failed to initialize enigo: {}", e))?;

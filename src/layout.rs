@@ -1,9 +1,15 @@
+/// Represents a grid layout with columns and rows.
 #[derive(Debug, PartialEq)]
 pub struct Layout {
+    /// Number of columns in the grid.
     pub cols: u32,
+    /// Number of rows in the grid.
     pub rows: u32,
 }
 
+/// Parses a layout argument string into a `Layout`.
+///
+/// Accepts either a plain number (e.g. "4") or a grid spec (e.g. "2x3").
 pub fn parse_layout(arg: &str) -> Result<Layout, String> {
     // グリッド指定: CxR 形式
     if let Some((cols_str, rows_str)) = arg.split_once('x') {

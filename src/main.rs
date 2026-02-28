@@ -7,6 +7,7 @@ use config::{find_config_path, parse_keybindings};
 use layout::parse_layout;
 use split::execute_splits;
 
+/// Application version string loaded from Cargo.toml.
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn main() {

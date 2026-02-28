@@ -1,11 +1,15 @@
 use enigo::Key;
 
+/// A key combination consisting of modifier keys and a primary key.
 #[derive(Debug, PartialEq)]
 pub struct KeyCombo {
+    /// Modifier keys (e.g. Ctrl, Shift, Meta).
     pub modifiers: Vec<Key>,
+    /// The primary key to press.
     pub key: Key,
 }
 
+/// Converts a Ghostty key name string into an enigo `Key`.
 fn parse_ghostty_key(name: &str) -> Result<Key, String> {
     match name {
         // 修飾キー
@@ -69,8 +73,10 @@ fn parse_ghostty_key(name: &str) -> Result<Key, String> {
     }
 }
 
+/// List of recognized modifier key names for validation.
 const MODIFIER_NAMES: &[&str] = &["super", "ctrl", "control", "shift", "alt"];
 
+/// Parses a keybinding trigger string (e.g. "super+shift+d") into a `KeyCombo`.
 pub fn parse_key_combo(trigger: &str) -> Result<KeyCombo, String> {
     if trigger.is_empty() {
         return Err("Empty keybinding".to_string());

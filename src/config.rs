@@ -11,15 +11,22 @@ const REQUIRED_ACTIONS: &[&str] = &[
     "equalize_splits",
 ];
 
+/// Parsed keybindings required for pane splitting operations.
 #[derive(Debug, PartialEq)]
 pub struct Keybindings {
+    /// Key combo for splitting a pane to the right.
     pub split_right: KeyCombo,
+    /// Key combo for splitting a pane downward.
     pub split_down: KeyCombo,
+    /// Key combo for navigating to the next pane.
     pub goto_next: KeyCombo,
+    /// Key combo for navigating to the previous pane.
     pub goto_previous: KeyCombo,
+    /// Key combo for equalizing pane sizes.
     pub equalize: KeyCombo,
 }
 
+/// Finds the Ghostty config file path by checking platform-specific locations.
 pub fn find_config_path() -> Result<PathBuf, String> {
     let home =
         std::env::var("HOME").map_err(|_| "HOME environment variable is not set".to_string())?;
@@ -53,6 +60,7 @@ pub fn find_config_path() -> Result<PathBuf, String> {
     ))
 }
 
+/// Parses Ghostty config content and extracts the required keybindings.
 pub fn parse_keybindings(content: &str) -> Result<Keybindings, String> {
     let mut bindings: HashMap<&str, &str> = HashMap::new();
 
