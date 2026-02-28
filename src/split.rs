@@ -60,6 +60,7 @@ pub fn execute_splits(keybindings: &Keybindings, layout: &Layout) -> Result<(), 
     // Phase 3: pane サイズの均等化
     press_key_combo(&mut enigo, &keybindings.equalize)
         .map_err(|e| format!("Failed to send equalize: {}", e))?;
+    thread::sleep(delay);
 
     Ok(())
 }
