@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 description = "CLI tool to split panes on Ghostty Terminal"
 license = "MIT"
+repository = "https://github.com/rikeda71/ghostty-pane-splitter"
+keywords = ["ghostty", "terminal", "pane", "split"]
+categories = ["command-line-utilities"]
 
 [dependencies]
 enigo = "0.6.1"
