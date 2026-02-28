@@ -2,13 +2,13 @@
 
 ## Next
 
-次に着手するタスク: T-17
+次に着手するタスク: T-21
 
 ## Backlog
 
-### リファクタリング
+### リリース設定
 
-- [ ] T-17: layout.rs に Layout, parse_layout を分離
-- [ ] T-18: keybind.rs に KeyCombo, parse_ghostty_key, parse_key_combo, MODIFIER_NAMES を分離
-- [ ] T-19: config.rs に Keybindings, find_config_path, parse_keybindings, REQUIRED_ACTIONS を分離
-- [ ] T-20: split.rs に press_key_combo, execute_splits, DELAY_MS を分離
+- [ ] T-21: Cargo.toml にリリース用メタデータ追加 (repository, keywords, categories)
+- [ ] T-22: GitHub Release workflow 作成 (タグプッシュ時にバイナリビルド・リリース作成)
+- [ ] T-23: crates.io publish ステップ追加
+- [ ] T-24: Homebrew tap セットアップ (formula 作成・自動更新)
