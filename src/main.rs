@@ -1,0 +1,41 @@
+const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+fn main() {
+    let args: Vec<String> = std::env::args().collect();
+
+    if args.len() < 2 {
+        print_usage();
+        std::process::exit(1);
+    }
+
+    match args[1].as_str() {
+        "--help" | "-h" => print_usage(),
+        "--version" | "-V" => println!("ghostty-pane-splitter {}", VERSION),
+        arg => {
+            println!("Layout argument: {}", arg);
+            println!("(Not yet implemented)");
+        }
+    }
+}
+
+fn print_usage() {
+    println!(
+        "ghostty-pane-splitter {}
+CLI tool to split panes on Ghostty Terminal
+
+USAGE:
+    ghostty-pane-splitter <LAYOUT>
+
+ARGS:
+    <LAYOUT>    Number of panes (e.g. 4) or grid spec (e.g. 2x3)
+
+OPTIONS:
+    -h, --help       Print help information
+    -V, --version    Print version information
+
+EXAMPLES:
+    ghostty-pane-splitter 4      # Split into 2x2 grid
+    ghostty-pane-splitter 2x3    # Split into 2 cols x 3 rows",
+        VERSION
+    );
+}
