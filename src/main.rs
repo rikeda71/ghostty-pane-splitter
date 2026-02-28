@@ -3,6 +3,14 @@ use std::path::PathBuf;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
+const REQUIRED_ACTIONS: &[&str] = &[
+    "new_split:right",
+    "new_split:down",
+    "goto_split:next",
+    "goto_split:previous",
+    "equalize_splits",
+];
+
 #[derive(Debug, PartialEq)]
 struct Layout {
     cols: u32,
@@ -54,14 +62,6 @@ fn parse_layout(arg: &str) -> Result<Layout, String> {
 
     Ok(Layout { cols, rows })
 }
-
-const REQUIRED_ACTIONS: &[&str] = &[
-    "new_split:right",
-    "new_split:down",
-    "goto_split:next",
-    "goto_split:previous",
-    "equalize_splits",
-];
 
 #[derive(Debug, PartialEq)]
 struct Keybindings {

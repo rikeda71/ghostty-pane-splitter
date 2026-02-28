@@ -19,6 +19,6 @@
 - [ ] T-15: 操作間のスリープ挿入
 - [ ] T-16: Ghostty 上での手動テスト
 
-### モジュール分割
+### リファクタリング
 
-- [ ] T-17: main.rs からモジュールへの分離（grid, config, keybind, splitter 等）
+- [ ] T-17: main.rs からモジュールへの分離（layout.rs, config.rs に分離し、main.rs は CLI エントリーポイントのみにする）
