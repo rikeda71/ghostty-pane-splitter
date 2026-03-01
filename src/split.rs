@@ -27,21 +27,21 @@ pub fn execute_splits(keybindings: &Keybindings, layout: &Layout) -> Result<(), 
         .map_err(|e| format!("Failed to initialize enigo: {}", e))?;
     let delay = Duration::from_millis(DELAY_MS);
 
-    // Phase 1: 列を作成（水平分割）
+    // Phase 1: Create columns (horizontal splits)
     for _ in 0..(layout.cols - 1) {
         press_key_combo(&mut enigo, &keybindings.split_right)
             .map_err(|e| format!("Failed to send split_right: {}", e))?;
         thread::sleep(delay);
     }
 
-    // 最初の列に戻る
+    // Go back to the first column
     for _ in 0..(layout.cols - 1) {
         press_key_combo(&mut enigo, &keybindings.goto_previous)
             .map_err(|e| format!("Failed to send goto_previous: {}", e))?;
         thread::sleep(delay);
     }
 
-    // Phase 2: 各列に行を作成（垂直分割）
+    // Phase 2: Create rows in each column (vertical splits)
     if layout.rows > 1 {
         for col in 0..layout.cols {
             for _ in 0..(layout.rows - 1) {
@@ -57,7 +57,7 @@ pub fn execute_splits(keybindings: &Keybindings, layout: &Layout) -> Result<(), 
         }
     }
 
-    // Phase 3: pane サイズの均等化
+    // Phase 3: Equalize pane sizes
     press_key_combo(&mut enigo, &keybindings.equalize)
         .map_err(|e| format!("Failed to send equalize: {}", e))?;
     thread::sleep(delay);

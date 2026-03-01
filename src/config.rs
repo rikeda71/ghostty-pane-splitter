@@ -78,7 +78,7 @@ pub fn parse_keybindings(content: &str) -> Result<Keybindings, String> {
         };
         let rest = rest.trim();
 
-        // trigger=action の分割
+        // Split into trigger=action
         let Some((trigger, action)) = rest.split_once('=') else {
             continue;
         };

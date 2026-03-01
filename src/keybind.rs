@@ -23,13 +23,13 @@ pub(crate) fn physical_key(macos_keycode: u32, unicode_char: char) -> Key {
 /// Converts a Ghostty key name string into an enigo `Key`.
 fn parse_ghostty_key(name: &str) -> Result<Key, String> {
     match name {
-        // 修飾キー
+        // Modifier keys
         "super" => Ok(Key::Meta),
         "ctrl" | "control" => Ok(Key::Control),
         "shift" => Ok(Key::Shift),
         "alt" => Ok(Key::Alt),
 
-        // 特殊キー
+        // Special keys
         "space" => Ok(Key::Space),
         "tab" => Ok(Key::Tab),
         "return" | "enter" => Ok(Key::Return),
@@ -41,13 +41,13 @@ fn parse_ghostty_key(name: &str) -> Result<Key, String> {
         "page_up" => Ok(Key::PageUp),
         "page_down" => Ok(Key::PageDown),
 
-        // 矢印キー
+        // Arrow keys
         "up" => Ok(Key::UpArrow),
         "down" => Ok(Key::DownArrow),
         "left" => Ok(Key::LeftArrow),
         "right" => Ok(Key::RightArrow),
 
-        // ファンクションキー
+        // Function keys
         "f1" => Ok(Key::F1),
         "f2" => Ok(Key::F2),
         "f3" => Ok(Key::F3),
@@ -61,7 +61,7 @@ fn parse_ghostty_key(name: &str) -> Result<Key, String> {
         "f11" => Ok(Key::F11),
         "f12" => Ok(Key::F12),
 
-        // 記号キー (Ghostty の命名規則) - macOS では物理キーコード (kVK_ANSI_*) を使用
+        // Symbol keys (Ghostty naming) - uses physical keycodes (kVK_ANSI_*) on macOS
         "left_bracket" => Ok(physical_key(0x21, '[')),
         "right_bracket" => Ok(physical_key(0x1E, ']')),
         "equal" => Ok(physical_key(0x18, '=')),
@@ -74,7 +74,7 @@ fn parse_ghostty_key(name: &str) -> Result<Key, String> {
         "apostrophe" => Ok(physical_key(0x27, '\'')),
         "grave_accent" => Ok(physical_key(0x32, '`')),
 
-        // 1文字の場合は Unicode として扱う
+        // Single character: treat as Unicode
         s if s.len() == 1 => {
             let c = s.chars().next().unwrap();
             Ok(Key::Unicode(c))
@@ -94,7 +94,7 @@ pub fn parse_key_combo(trigger: &str) -> Result<KeyCombo, String> {
     }
     let parts: Vec<&str> = trigger.split('+').collect();
 
-    // 最後の要素がメインキー、それ以外は修飾キー
+    // Last element is the main key, rest are modifiers
     let mut modifiers = Vec::new();
     for &part in &parts[..parts.len() - 1] {
         if !MODIFIER_NAMES.contains(&part) {
@@ -118,7 +118,7 @@ mod tests {
     #[test]
     fn parse_key_combo_valid_cases() {
         let cases = [
-            // 修飾キー1つ + 文字キー
+            // Single modifier + character key
             (
                 "super+d",
                 KeyCombo {
@@ -147,7 +147,7 @@ mod tests {
                     key: Key::Unicode('x'),
                 },
             ),
-            // 修飾キー複数
+            // Multiple modifiers
             (
                 "super+shift+d",
                 KeyCombo {
@@ -162,7 +162,7 @@ mod tests {
                     key: physical_key(0x18, '='),
                 },
             ),
-            // 修飾キーなし
+            // No modifiers
             (
                 "space",
                 KeyCombo {
@@ -177,7 +177,7 @@ mod tests {
                     key: Key::F1,
                 },
             ),
-            // 記号キー
+            // Symbol keys
             (
                 "super+ctrl+right_bracket",
                 KeyCombo {
@@ -192,7 +192,7 @@ mod tests {
                     key: physical_key(0x21, '['),
                 },
             ),
-            // 矢印キー
+            // Arrow keys
             (
                 "ctrl+up",
                 KeyCombo {
@@ -200,7 +200,7 @@ mod tests {
                     key: Key::UpArrow,
                 },
             ),
-            // control エイリアス
+            // control alias
             (
                 "control+d",
                 KeyCombo {
@@ -208,7 +208,7 @@ mod tests {
                     key: Key::Unicode('d'),
                 },
             ),
-            // enter エイリアス
+            // enter alias
             (
                 "super+enter",
                 KeyCombo {
@@ -249,13 +249,13 @@ mod tests {
     #[test]
     fn parse_ghostty_key_valid_cases() {
         let cases = [
-            // 修飾キー
+            // Modifier keys
             ("super", Key::Meta),
             ("ctrl", Key::Control),
             ("control", Key::Control),
             ("shift", Key::Shift),
             ("alt", Key::Alt),
-            // 特殊キー
+            // Special keys
             ("space", Key::Space),
             ("tab", Key::Tab),
             ("return", Key::Return),
@@ -268,15 +268,15 @@ mod tests {
             ("end", Key::End),
             ("page_up", Key::PageUp),
             ("page_down", Key::PageDown),
-            // 矢印キー
+            // Arrow keys
             ("up", Key::UpArrow),
             ("down", Key::DownArrow),
             ("left", Key::LeftArrow),
             ("right", Key::RightArrow),
-            // ファンクションキー
+            // Function keys
             ("f1", Key::F1),
             ("f12", Key::F12),
-            // 記号キー
+            // Symbol keys
             ("left_bracket", physical_key(0x21, '[')),
             ("right_bracket", physical_key(0x1E, ']')),
             ("equal", physical_key(0x18, '=')),
@@ -288,7 +288,7 @@ mod tests {
             ("semicolon", physical_key(0x29, ';')),
             ("apostrophe", physical_key(0x27, '\'')),
             ("grave_accent", physical_key(0x32, '`')),
-            // 1文字
+            // Single character
             ("d", Key::Unicode('d')),
             ("1", Key::Unicode('1')),
         ];
