@@ -10,47 +10,7 @@ CLI tool to split panes on Ghostty Terminal.
 
 Automates Ghostty's pane splitting by simulating keyboard inputs via [enigo](https://github.com/enigo-rs/enigo), enabling cross-platform support (macOS / Linux).
 
-![demo](images/demo.gif)
-
-## Installation
-
-### Homebrew (macOS)
-
-```bash
-brew install rikeda71/tap/ghostty-pane-splitter
-```
-
-### curl (GitHub Releases)
-
-```bash
-# macOS (Apple Silicon)
-curl -fsSL https://github.com/rikeda71/ghostty-pane-splitter/releases/latest/download/ghostty-pane-splitter-aarch64-apple-darwin.tar.gz | tar xz
-sudo mv ghostty-pane-splitter /usr/local/bin/
-
-# macOS (Intel)
-curl -fsSL https://github.com/rikeda71/ghostty-pane-splitter/releases/latest/download/ghostty-pane-splitter-x86_64-apple-darwin.tar.gz | tar xz
-sudo mv ghostty-pane-splitter /usr/local/bin/
-
-# Linux (x86_64)
-curl -fsSL https://github.com/rikeda71/ghostty-pane-splitter/releases/latest/download/ghostty-pane-splitter-x86_64-unknown-linux-gnu.tar.gz | tar xz
-sudo mv ghostty-pane-splitter /usr/local/bin/
-```
-
-### Cargo
-
-```bash
-cargo install ghostty-pane-splitter
-```
-
-### From source
-
-```bash
-git clone https://github.com/rikeda71/ghostty-pane-splitter.git
-cd ghostty-pane-splitter
-cargo install --path .
-```
-
-> **Note**: Linux requires `libxdo-dev` (`sudo apt install libxdo-dev`)
+![demo](images/demo-number.gif)
 
 ## Usage
 
@@ -95,6 +55,46 @@ ghostty-pane-splitter --help
 | `1,3`   | 1+3    | Left: 1 pane, Right: 3 panes |
 | `2,1,3` | 2+1+3  | 3 columns with 2, 1, 3 rows |
 
+## Installation
+
+### Homebrew (macOS)
+
+```bash
+brew install rikeda71/tap/ghostty-pane-splitter
+```
+
+### curl (GitHub Releases)
+
+```bash
+# macOS (Apple Silicon)
+curl -fsSL https://github.com/rikeda71/ghostty-pane-splitter/releases/latest/download/ghostty-pane-splitter-aarch64-apple-darwin.tar.gz | tar xz
+sudo mv ghostty-pane-splitter /usr/local/bin/
+
+# macOS (Intel)
+curl -fsSL https://github.com/rikeda71/ghostty-pane-splitter/releases/latest/download/ghostty-pane-splitter-x86_64-apple-darwin.tar.gz | tar xz
+sudo mv ghostty-pane-splitter /usr/local/bin/
+
+# Linux (x86_64)
+curl -fsSL https://github.com/rikeda71/ghostty-pane-splitter/releases/latest/download/ghostty-pane-splitter-x86_64-unknown-linux-gnu.tar.gz | tar xz
+sudo mv ghostty-pane-splitter /usr/local/bin/
+```
+
+### Cargo
+
+```bash
+cargo install ghostty-pane-splitter
+```
+
+### From source
+
+```bash
+git clone https://github.com/rikeda71/ghostty-pane-splitter.git
+cd ghostty-pane-splitter
+cargo install --path .
+```
+
+> **Note**: Linux requires `libxdo-dev` (`sudo apt install libxdo-dev`)
+
 ## Configuration
 
 This tool reads keybindings directly from your Ghostty config file. Add the following keybindings to your Ghostty config:
@@ -112,6 +112,14 @@ Ghostty config file locations:
 - **Linux**: `~/.config/ghostty/config`
 
 The tool will show an error if the config file is not found or required keybindings are missing.
+
+## Demo
+
+| Type | Command | Demo |
+|------|---------|------|
+| Number | `ghostty-pane-splitter 9` | ![number](images/demo-number.gif) |
+| Grid | `ghostty-pane-splitter 2x2` | ![grid](images/demo-grid.gif) |
+| Custom | `ghostty-pane-splitter 1,4` | ![custom](images/demo-custom.gif) |
 
 ## Requirements
 
