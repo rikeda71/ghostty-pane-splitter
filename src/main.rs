@@ -44,12 +44,24 @@ fn main() {
                         std::process::exit(1);
                     }
                 };
-                println!(
-                    "Splitting into {}x{} grid ({} panes)...",
-                    layout.cols,
-                    layout.rows,
-                    layout.cols * layout.rows
-                );
+                // Uniform grid if all columns have the same row count
+                let is_uniform = layout.columns.windows(2).all(|w| w[0] == w[1]);
+                if is_uniform {
+                    println!(
+                        "Splitting into {}x{} grid ({} panes)...",
+                        layout.num_cols(),
+                        layout.columns[0],
+                        layout.total_panes()
+                    );
+                } else {
+                    let cols_str: Vec<String> =
+                        layout.columns.iter().map(|c| c.to_string()).collect();
+                    println!(
+                        "Splitting into custom layout {} ({} panes)...",
+                        cols_str.join(","),
+                        layout.total_panes()
+                    );
+                }
                 if let Err(e) = execute_splits(&keybindings, &layout) {
                     eprintln!("Error: {}", e);
                     std::process::exit(1);
@@ -73,7 +85,7 @@ USAGE:
     ghostty-pane-splitter <LAYOUT>
 
 ARGS:
-    <LAYOUT>    Number of panes (e.g. 4) or grid spec (e.g. 2x3)
+    <LAYOUT>    Number of panes (e.g. 4), grid spec (e.g. 2x3), or custom layout (e.g. 1,3)
 
 OPTIONS:
     -h, --help       Print help information
@@ -81,7 +93,9 @@ OPTIONS:
 
 EXAMPLES:
     ghostty-pane-splitter 4      # Split into 2x2 grid
-    ghostty-pane-splitter 2x3    # Split into 2 cols x 3 rows",
+    ghostty-pane-splitter 2x3    # Split into 2 cols x 3 rows
+    ghostty-pane-splitter 1,3    # Left: 1 pane, Right: 3 panes
+    ghostty-pane-splitter 2,1,3  # 3 columns with 2, 1, 3 rows",
         VERSION
     );
 }
