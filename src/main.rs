@@ -44,7 +44,9 @@ fn main() {
                         std::process::exit(1);
                     }
                 };
-                // Uniform grid if all columns have the same row count
+                // Uniform grid if all columns have the same row count.
+                // Note: windows(2) on a single-element slice returns an empty iterator,
+                // so all() returns true, correctly treating a single column as uniform.
                 let is_uniform = layout.columns.windows(2).all(|w| w[0] == w[1]);
                 if is_uniform {
                     println!(

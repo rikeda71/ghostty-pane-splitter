@@ -92,7 +92,7 @@ fn parse_grid_spec(arg: &str) -> Result<Layout, String> {
 fn parse_numeric(arg: &str) -> Result<Layout, String> {
     let n = arg.parse::<u32>().map_err(|_| {
         format!(
-            "Invalid argument: '{}'. Expected a number or grid spec (e.g. 4, 2x3)",
+            "Invalid argument: '{}'. Expected a number, grid spec, or custom layout (e.g. 4, 2x3, 1,3)",
             arg
         )
     })?;
@@ -183,13 +183,6 @@ mod tests {
         for input in cases {
             assert!(parse_layout(input).is_err(), "input: {}", input);
         }
-    }
-
-    #[test]
-    fn parse_layout_custom_single_column_too_few_panes() {
-        // "1" via custom layout is not reachable (no comma), but total panes < 2 check
-        // is tested via numeric "1" above. Here we ensure a single-pane custom layout fails.
-        // Not possible with comma format since at least two parts are needed.
     }
 
     #[test]

@@ -10,8 +10,6 @@ use crate::layout::Layout;
 const SPLIT_DELAY_MS: u64 = 200;
 /// Delay in milliseconds between navigation operations (focus move only).
 const NAV_DELAY_MS: u64 = 50;
-/// Delay in milliseconds for rapid consecutive focus moves (Phase 5).
-const FAST_NAV_DELAY_MS: u64 = 20;
 
 /// Sends a key combination via enigo by pressing modifiers, clicking the key, and releasing.
 fn press_key_combo(enigo: &mut Enigo, combo: &KeyCombo) -> Result<(), enigo::InputError> {
@@ -31,7 +29,6 @@ pub fn execute_splits(keybindings: &Keybindings, layout: &Layout) -> Result<(), 
         .map_err(|e| format!("Failed to initialize enigo: {}", e))?;
     let split_delay = Duration::from_millis(SPLIT_DELAY_MS);
     let nav_delay = Duration::from_millis(NAV_DELAY_MS);
-    let fast_nav_delay = Duration::from_millis(FAST_NAV_DELAY_MS);
 
     let num_cols = layout.num_cols();
 
@@ -72,7 +69,7 @@ pub fn execute_splits(keybindings: &Keybindings, layout: &Layout) -> Result<(), 
     for _ in 0..(layout.total_panes() - 1) {
         press_key_combo(&mut enigo, &keybindings.goto_previous)
             .map_err(|e| format!("Failed to send goto_previous: {}", e))?;
-        thread::sleep(fast_nav_delay);
+        thread::sleep(nav_delay);
     }
 
     Ok(())
