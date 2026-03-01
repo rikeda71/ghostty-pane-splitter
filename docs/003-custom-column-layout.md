@@ -89,6 +89,10 @@ ghostty-pane-splitter 1,3        ghostty-pane-splitter 2,1,3
 2. `x` を含む → グリッド指定（例: `2x3`）— 既存動作
 3. 数値のみ → 数値指定（例: `4`）— 既存動作
 
+**注意: 数値指定とカスタム指定の違い**
+
+カンマなしの数値 `3` は既存の数値指定として解釈され、因数分解により `[3, 1]`（3列1行）になる。1列3行としたい場合はグリッド指定 `1x3` またはカスタム指定 `3,` ではなく `1,1,1`（3列各1行）のように指定する必要がある。`3,` のような末尾カンマや `,3` のような先頭カンマは不正な入力としてエラーにする。
+
 ### データモデルの変更
 
 現在の `Layout` 構造体:
@@ -140,10 +144,17 @@ impl Layout {
 - 列数は 1 以上
 - 総 pane 数は 2 以上（1 pane だと分割の意味がない）
 - カンマ区切りの各要素が有効な正整数であること
+- 先頭・末尾のカンマや連続カンマは不正入力としてエラー（例: `,3`, `3,`, `1,,3`）
 
 ### 分割アルゴリズムの変更
 
 現在のアルゴリズムは「全列で同じ行数を split_down する」前提だが、新しいアルゴリズムは列ごとに異なる行数で split_down する。変更は最小限で済む。
+
+#### Ghostty の pane 移動順序の前提
+
+Ghostty の `goto_split:next` / `goto_split:previous` は **pane の作成順** でフォーカスを移動する。Phase 1 で列を左から右に作成し、Phase 3 で各列内を上から下に分割するため、`goto_next` は常に「次の列の先頭 pane」に移動する。この前提は既存の均一グリッド実装（`split.rs`）と同じである。
+
+#### アルゴリズム
 
 ```
 Phase 1: Create columns
@@ -160,9 +171,14 @@ Phase 3: Create rows in each column
 
 Phase 4: Equalize pane sizes
   equalize_splits を 1 回実行
+
+Phase 5: Navigate to top-left pane
+  goto_previous を (total_panes - 1) 回実行
 ```
 
-既存の均一グリッドのフローと比較して、Phase 3 の `split_down` 回数が列ごとに可変になる点のみが異なる。
+既存の均一グリッドのフローと比較した差分:
+- Phase 3: `split_down` 回数が列ごとに可変
+- Phase 5: 処理終了後に最も左上の pane（最初に作成された pane）にフォーカスを戻す。`goto_previous` を総 pane 数 - 1 回実行することで、作成順の先頭 pane に確実に移動する
 
 ### 出力メッセージの変更
 
@@ -173,7 +189,7 @@ Phase 4: Equalize pane sizes
 Splitting into 2x3 grid (6 panes)...
 
 # カスタムレイアウト
-Splitting into custom layout [1, 3] (4 panes)...
+Splitting into custom layout 1,3 (4 panes)...
 ```
 
 ### 影響範囲
