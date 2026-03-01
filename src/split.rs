@@ -9,19 +9,12 @@ use crate::layout::Layout;
 /// Delay in milliseconds between key operations to allow Ghostty to process each action.
 const DELAY_MS: u64 = 200;
 
-/// Delay in milliseconds between key press and release within a single key combo.
-/// This gives Ghostty time to recognize the keybinding before modifier keys are released.
-const KEY_PRESS_DELAY_MS: u64 = 20;
-
-/// Sends a key combination via enigo by pressing modifiers, pressing the key,
-/// waiting briefly for the keybinding to be recognized, then releasing.
+/// Sends a key combination via enigo by pressing modifiers, clicking the key, and releasing.
 fn press_key_combo(enigo: &mut Enigo, combo: &KeyCombo) -> Result<(), enigo::InputError> {
     for modifier in &combo.modifiers {
         enigo.key(*modifier, Direction::Press)?;
     }
-    enigo.key(combo.key, Direction::Press)?;
-    thread::sleep(Duration::from_millis(KEY_PRESS_DELAY_MS));
-    enigo.key(combo.key, Direction::Release)?;
+    enigo.key(combo.key, Direction::Click)?;
     for modifier in combo.modifiers.iter().rev() {
         enigo.key(*modifier, Direction::Release)?;
     }
