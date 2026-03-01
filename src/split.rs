@@ -6,8 +6,10 @@ use crate::config::Keybindings;
 use crate::keybind::KeyCombo;
 use crate::layout::Layout;
 
-/// Delay in milliseconds between key operations to allow Ghostty to process each action.
-const DELAY_MS: u64 = 200;
+/// Delay in milliseconds between split operations to allow Ghostty to create new panes.
+const SPLIT_DELAY_MS: u64 = 200;
+/// Delay in milliseconds between navigation operations (focus move only).
+const NAV_DELAY_MS: u64 = 50;
 
 /// Sends a key combination via enigo by pressing modifiers, clicking the key, and releasing.
 fn press_key_combo(enigo: &mut Enigo, combo: &KeyCombo) -> Result<(), enigo::InputError> {
@@ -25,7 +27,8 @@ fn press_key_combo(enigo: &mut Enigo, combo: &KeyCombo) -> Result<(), enigo::Inp
 pub fn execute_splits(keybindings: &Keybindings, layout: &Layout) -> Result<(), String> {
     let mut enigo = Enigo::new(&Settings::default())
         .map_err(|e| format!("Failed to initialize enigo: {}", e))?;
-    let delay = Duration::from_millis(DELAY_MS);
+    let split_delay = Duration::from_millis(SPLIT_DELAY_MS);
+    let nav_delay = Duration::from_millis(NAV_DELAY_MS);
 
     let num_cols = layout.num_cols();
 
@@ -33,14 +36,14 @@ pub fn execute_splits(keybindings: &Keybindings, layout: &Layout) -> Result<(), 
     for _ in 0..(num_cols - 1) {
         press_key_combo(&mut enigo, &keybindings.split_right)
             .map_err(|e| format!("Failed to send split_right: {}", e))?;
-        thread::sleep(delay);
+        thread::sleep(split_delay);
     }
 
     // Phase 2: Navigate back to first column
     for _ in 0..(num_cols - 1) {
         press_key_combo(&mut enigo, &keybindings.goto_previous)
             .map_err(|e| format!("Failed to send goto_previous: {}", e))?;
-        thread::sleep(delay);
+        thread::sleep(nav_delay);
     }
 
     // Phase 3: Create rows in each column (vertical splits)
@@ -48,25 +51,25 @@ pub fn execute_splits(keybindings: &Keybindings, layout: &Layout) -> Result<(), 
         for _ in 0..(layout.columns[col] - 1) {
             press_key_combo(&mut enigo, &keybindings.split_down)
                 .map_err(|e| format!("Failed to send split_down: {}", e))?;
-            thread::sleep(delay);
+            thread::sleep(split_delay);
         }
         if col < num_cols - 1 {
             press_key_combo(&mut enigo, &keybindings.goto_next)
                 .map_err(|e| format!("Failed to send goto_next: {}", e))?;
-            thread::sleep(delay);
+            thread::sleep(nav_delay);
         }
     }
 
     // Phase 4: Equalize pane sizes
     press_key_combo(&mut enigo, &keybindings.equalize)
         .map_err(|e| format!("Failed to send equalize: {}", e))?;
-    thread::sleep(delay);
+    thread::sleep(split_delay);
 
     // Phase 5: Navigate to top-left pane
     for _ in 0..(layout.total_panes() - 1) {
         press_key_combo(&mut enigo, &keybindings.goto_previous)
             .map_err(|e| format!("Failed to send goto_previous: {}", e))?;
-        thread::sleep(delay);
+        thread::sleep(nav_delay);
     }
 
     Ok(())
