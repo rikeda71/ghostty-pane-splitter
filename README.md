@@ -10,6 +10,8 @@ CLI tool to split panes on Ghostty Terminal.
 
 Automates Ghostty's pane splitting by simulating keyboard inputs via [enigo](https://github.com/enigo-rs/enigo), enabling cross-platform support (macOS / Linux).
 
+![demo](images/demo.gif)
+
 ## Installation
 
 ### Homebrew (macOS)
