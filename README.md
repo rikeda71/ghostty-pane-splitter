@@ -17,10 +17,14 @@ Automates Ghostty's pane splitting by simulating keyboard inputs via [enigo](htt
 Ghostty is becoming the terminal of choice for CLI-based AI coding agents like [Claude Code](https://code.claude.com/) and [Codex CLI](https://github.com/openai/codex). Use `ghostty-pane-splitter` to instantly set up multi-pane layouts — run your AI agent in one pane, your editor in another, and a dev server in a third, all with a single command.
 
 ```bash
-# Example: 3-pane layout for AI coding workflow
-# Left: AI agent, Right-top: editor, Right-bottom: terminal
+# 3-pane layout: Left: AI agent, Right-top: editor, Right-bottom: terminal
 ghostty-pane-splitter 1,2
+
+# 4-pane layout for running multiple agents in parallel with git worktrees
+ghostty-pane-splitter 4
 ```
+
+Running multiple AI agents in parallel with [git worktrees](https://git-scm.com/docs/git-worktree) is a popular productivity pattern. `ghostty-pane-splitter` lets you set up multi-agent layouts instantly — no tmux required.
 
 ## Usage
 
