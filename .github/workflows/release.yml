@@ -62,7 +62,7 @@ jobs:
         run: |
           cd target/${{ matrix.target }}/release
           tar czf ../../../ghostty-pane-splitter-${{ matrix.target }}.tar.gz ghostty-pane-splitter
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ghostty-pane-splitter-${{ matrix.target }}
           path: ghostty-pane-splitter-${{ matrix.target }}.tar.gz
@@ -78,7 +78,7 @@ jobs:
         run: |
           git tag "v${{ needs.check-version.outputs.version }}"
           git push origin "v${{ needs.check-version.outputs.version }}"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           merge-multiple: true
       - name: Create GitHub Release
@@ -106,7 +106,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Update Homebrew formula
-        uses: peter-evans/repository-dispatch@v3
+        uses: peter-evans/repository-dispatch@v4
         with:
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           repository: rikeda71/homebrew-tap
