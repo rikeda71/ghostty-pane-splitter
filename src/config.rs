@@ -127,6 +127,7 @@ mod tests {
     use enigo::Key;
 
     use super::*;
+    use crate::keybind::physical_key;
 
     const FULL_CONFIG: &str = "\
 keybind = super+d=new_split:right
@@ -157,21 +158,21 @@ keybind = super+ctrl+shift+equal=equalize_splits
             kb.goto_next,
             KeyCombo {
                 modifiers: vec![Key::Meta, Key::Control],
-                key: Key::Unicode(']')
+                key: physical_key(0x1E, ']')
             }
         );
         assert_eq!(
             kb.goto_previous,
             KeyCombo {
                 modifiers: vec![Key::Meta, Key::Control],
-                key: Key::Unicode('[')
+                key: physical_key(0x21, '[')
             }
         );
         assert_eq!(
             kb.equalize,
             KeyCombo {
                 modifiers: vec![Key::Meta, Key::Control, Key::Shift],
-                key: Key::Unicode('=')
+                key: physical_key(0x18, '=')
             }
         );
     }

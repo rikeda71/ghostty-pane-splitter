@@ -9,6 +9,17 @@ pub struct KeyCombo {
     pub key: Key,
 }
 
+/// Returns the appropriate Key for a Ghostty named symbol key.
+/// On macOS, uses the physical keycode (kVK_ANSI_*) to match Ghostty's keybinding system.
+/// On other platforms, uses the Unicode character with layout-dependent resolution.
+pub(crate) fn physical_key(macos_keycode: u32, unicode_char: char) -> Key {
+    if cfg!(target_os = "macos") {
+        Key::Other(macos_keycode)
+    } else {
+        Key::Unicode(unicode_char)
+    }
+}
+
 /// Converts a Ghostty key name string into an enigo `Key`.
 fn parse_ghostty_key(name: &str) -> Result<Key, String> {
     match name {
@@ -50,18 +61,18 @@ fn parse_ghostty_key(name: &str) -> Result<Key, String> {
         "f11" => Ok(Key::F11),
         "f12" => Ok(Key::F12),
 
-        // 記号キー (Ghostty の命名規則)
-        "left_bracket" => Ok(Key::Unicode('[')),
-        "right_bracket" => Ok(Key::Unicode(']')),
-        "equal" => Ok(Key::Unicode('=')),
-        "minus" => Ok(Key::Unicode('-')),
-        "comma" => Ok(Key::Unicode(',')),
-        "period" => Ok(Key::Unicode('.')),
-        "slash" => Ok(Key::Unicode('/')),
-        "backslash" => Ok(Key::Unicode('\\')),
-        "semicolon" => Ok(Key::Unicode(';')),
-        "apostrophe" => Ok(Key::Unicode('\'')),
-        "grave_accent" => Ok(Key::Unicode('`')),
+        // 記号キー (Ghostty の命名規則) - macOS では物理キーコード (kVK_ANSI_*) を使用
+        "left_bracket" => Ok(physical_key(0x21, '[')),
+        "right_bracket" => Ok(physical_key(0x1E, ']')),
+        "equal" => Ok(physical_key(0x18, '=')),
+        "minus" => Ok(physical_key(0x1B, '-')),
+        "comma" => Ok(physical_key(0x2B, ',')),
+        "period" => Ok(physical_key(0x2F, '.')),
+        "slash" => Ok(physical_key(0x2C, '/')),
+        "backslash" => Ok(physical_key(0x2A, '\\')),
+        "semicolon" => Ok(physical_key(0x29, ';')),
+        "apostrophe" => Ok(physical_key(0x27, '\'')),
+        "grave_accent" => Ok(physical_key(0x32, '`')),
 
         // 1文字の場合は Unicode として扱う
         s if s.len() == 1 => {
@@ -148,7 +159,7 @@ mod tests {
                 "super+ctrl+shift+equal",
                 KeyCombo {
                     modifiers: vec![Key::Meta, Key::Control, Key::Shift],
-                    key: Key::Unicode('='),
+                    key: physical_key(0x18, '='),
                 },
             ),
             // 修飾キーなし
@@ -171,14 +182,14 @@ mod tests {
                 "super+ctrl+right_bracket",
                 KeyCombo {
                     modifiers: vec![Key::Meta, Key::Control],
-                    key: Key::Unicode(']'),
+                    key: physical_key(0x1E, ']'),
                 },
             ),
             (
                 "super+ctrl+left_bracket",
                 KeyCombo {
                     modifiers: vec![Key::Meta, Key::Control],
-                    key: Key::Unicode('['),
+                    key: physical_key(0x21, '['),
                 },
             ),
             // 矢印キー
@@ -266,17 +277,17 @@ mod tests {
             ("f1", Key::F1),
             ("f12", Key::F12),
             // 記号キー
-            ("left_bracket", Key::Unicode('[')),
-            ("right_bracket", Key::Unicode(']')),
-            ("equal", Key::Unicode('=')),
-            ("minus", Key::Unicode('-')),
-            ("comma", Key::Unicode(',')),
-            ("period", Key::Unicode('.')),
-            ("slash", Key::Unicode('/')),
-            ("backslash", Key::Unicode('\\')),
-            ("semicolon", Key::Unicode(';')),
-            ("apostrophe", Key::Unicode('\'')),
-            ("grave_accent", Key::Unicode('`')),
+            ("left_bracket", physical_key(0x21, '[')),
+            ("right_bracket", physical_key(0x1E, ']')),
+            ("equal", physical_key(0x18, '=')),
+            ("minus", physical_key(0x1B, '-')),
+            ("comma", physical_key(0x2B, ',')),
+            ("period", physical_key(0x2F, '.')),
+            ("slash", physical_key(0x2C, '/')),
+            ("backslash", physical_key(0x2A, '\\')),
+            ("semicolon", physical_key(0x29, ';')),
+            ("apostrophe", physical_key(0x27, '\'')),
+            ("grave_accent", physical_key(0x32, '`')),
             // 1文字
             ("d", Key::Unicode('d')),
             ("1", Key::Unicode('1')),
