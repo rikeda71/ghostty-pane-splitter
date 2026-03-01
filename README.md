@@ -56,7 +56,7 @@ cargo install --path .
 ghostty-pane-splitter <LAYOUT>
 ```
 
-`<LAYOUT>` accepts either a pane count or a grid spec (e.g. `COLSxROWS`).
+`<LAYOUT>` accepts a pane count, a grid spec (`COLSxROWS`), or a custom column layout (comma-separated row counts per column).
 
 ```bash
 # Split into 4 panes (2x2 grid)
@@ -68,6 +68,12 @@ ghostty-pane-splitter 6
 # Split into 2 cols x 3 rows
 ghostty-pane-splitter 2x3
 
+# Custom layout: left 1 pane, right 3 panes
+ghostty-pane-splitter 1,3
+
+# Custom layout: 3 columns with 2, 1, 3 rows
+ghostty-pane-splitter 2,1,3
+
 # Show version
 ghostty-pane-splitter --version
 
@@ -77,13 +83,15 @@ ghostty-pane-splitter --help
 
 ### Layout examples
 
-| Input | Result | Description |
-|-------|--------|-------------|
-| `2`   | 2x1    | 2 columns |
-| `4`   | 2x2    | 2x2 grid |
-| `6`   | 3x2    | 3 cols x 2 rows |
-| `9`   | 3x3    | 3x3 grid |
-| `2x3` | 2x3    | Explicit grid spec |
+| Input   | Result | Description |
+|---------|--------|-------------|
+| `2`     | 2x1    | 2 columns |
+| `4`     | 2x2    | 2x2 grid |
+| `6`     | 3x2    | 3 cols x 2 rows |
+| `9`     | 3x3    | 3x3 grid |
+| `2x3`   | 2x3    | Explicit grid spec |
+| `1,3`   | 1+3    | Left: 1 pane, Right: 3 panes |
+| `2,1,3` | 2+1+3  | 3 columns with 2, 1, 3 rows |
 
 ## Configuration
 
