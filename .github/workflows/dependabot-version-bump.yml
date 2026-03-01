@@ -1,0 +1,37 @@
+name: Dependabot Version Bump
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  bump-patch-version:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Bump patch version in Cargo.toml
+        run: |
+          current_version=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          IFS='.' read -r major minor patch <<< "$current_version"
+          new_version="${major}.${minor}.$((patch + 1))"
+          sed -i "s/^version = \"${current_version}\"/version = \"${new_version}\"/" Cargo.toml
+          echo "Bumped version: ${current_version} -> ${new_version}"
+
+      - name: Update Cargo.lock
+        run: cargo generate-lockfile
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Cargo.toml Cargo.lock
+          git diff --cached --quiet || git commit -m "chore: bump patch version"
+          git push

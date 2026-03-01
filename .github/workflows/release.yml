@@ -16,7 +16,7 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       changed: ${{ steps.check.outputs.changed }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Get version from Cargo.toml
@@ -48,7 +48,7 @@ jobs:
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
@@ -73,7 +73,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Create tag
         run: |
           git tag "v${{ needs.check-version.outputs.version }}"
@@ -92,7 +92,7 @@ jobs:
     needs: [check-version, release]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - name: Install libxdo-dev
         run: sudo apt-get update && sudo apt-get install -y libxdo-dev

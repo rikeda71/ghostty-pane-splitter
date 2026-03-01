@@ -127,6 +127,8 @@ Ghostty config file locations:
 
 The tool will show an error if the config file is not found or required keybindings are missing.
 
+> **Important**: After adding or changing keybindings, you must restart Ghostty for the changes to take effect. The tool will work correctly once Ghostty is relaunched with the updated config.
+
 ## Demo
 
 | Type | Command | Demo |
