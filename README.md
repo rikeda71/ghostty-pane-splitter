@@ -129,6 +129,11 @@ The tool will show an error if the config file is not found or required keybindi
 
 > **Important**: After adding or changing keybindings, you must restart Ghostty for the changes to take effect. The tool will work correctly once Ghostty is relaunched with the updated config.
 
+> **Tip** (Ghostty 1.3.0+): By default, new splits inherit the working directory of the current pane. You can control this behavior with the `split-inherit-working-directory` config option. Set it to `false` if you prefer new splits to always start in the home directory.
+> ```
+> split-inherit-working-directory = false
+> ```
+
 ## Demo
 
 | Type | Command | Demo |
