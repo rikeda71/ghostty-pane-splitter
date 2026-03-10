@@ -2,13 +2,15 @@
 
 ## Next
 
-T-5
+(なし)
 
 ## Backlog
 
-- T-5: split-inherit-working-directory 設定の案内を README に追記
+(なし)
 
 ## Done
+
+- T-5: split-inherit-working-directory 設定の案内を README に追記
 
 - T-2: Dependabot 導入 + 依存更新時の patch version 自動バンプ
 - T-3: README に Ghostty 再起動の注意事項を追記
