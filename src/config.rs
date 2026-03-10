@@ -85,6 +85,13 @@ pub fn parse_keybindings(content: &str) -> Result<Keybindings, String> {
         let trigger = trigger.trim();
         let action = action.trim();
 
+        // Skip key-table-scoped bindings (e.g. "resize/arrow_up=...")
+        // introduced in Ghostty 1.3.0. These are modal bindings that
+        // cannot be used as global keybindings.
+        if trigger.contains('/') {
+            continue;
+        }
+
         if REQUIRED_ACTIONS.contains(&action) {
             bindings.insert(action, trigger);
         }
@@ -252,6 +259,42 @@ keybind = super+shift+d=new_split:down
         for action in REQUIRED_ACTIONS {
             assert!(err.contains(action), "error should contain {}", action);
         }
+    }
+
+    #[test]
+    fn parse_keybindings_skips_key_table_scoped_bindings() {
+        let config = "\
+keybind = super+d=new_split:right
+keybind = super+shift+d=new_split:down
+keybind = super+ctrl+right_bracket=goto_split:next
+keybind = super+ctrl+left_bracket=goto_split:previous
+keybind = super+ctrl+shift+equal=equalize_splits
+keybind = resize/arrow_up=resize_split:up,10
+keybind = resize/arrow_down=resize_split:down,10
+";
+        let kb = parse_keybindings(config);
+        assert!(kb.is_ok(), "key-table bindings should be skipped");
+    }
+
+    #[test]
+    fn parse_keybindings_key_table_binding_does_not_override_global() {
+        let config = "\
+keybind = super+d=new_split:right
+keybind = mytable/ctrl+d=new_split:right
+keybind = super+shift+d=new_split:down
+keybind = super+ctrl+right_bracket=goto_split:next
+keybind = super+ctrl+left_bracket=goto_split:previous
+keybind = super+ctrl+shift+equal=equalize_splits
+";
+        let kb = parse_keybindings(config).unwrap();
+        // The key-table binding should be skipped, so super+d should remain
+        assert_eq!(
+            kb.split_right,
+            KeyCombo {
+                modifiers: vec![Key::Meta],
+                key: Key::Unicode('d')
+            }
+        );
     }
 
     #[test]

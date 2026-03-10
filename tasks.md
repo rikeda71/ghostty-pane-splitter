@@ -2,11 +2,12 @@
 
 ## Next
 
-(なし)
+T-4
 
 ## Backlog
 
-(なし)
+- T-4: macOS AppleScript 経由の pane 分割サポート（enigo 代替の信頼性向上）
+- T-5: split-inherit-working-directory 設定の案内を README に追記
 
 ## Done
 
